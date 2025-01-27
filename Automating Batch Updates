@@ -1,0 +1,17 @@
+def batch_update_responses(filename, responses):
+    # Load the tracking file
+    df = pd.read_csv(filename)
+    # Update statuses in bulk
+    for name, status in responses.items():
+        df.loc[df["Name"] == name, "Response Status"] = status["status"]
+        df.loc[df["Name"] == name, "Response Timestamp"] = status["timestamp"]
+    # Save updates back to the file
+    df.to_csv(filename, index=False)
+
+# Example: Responses to update
+responses = {
+    "Jane Doe": {"status": "Accepted", "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+    "John Smith": {"status": "No Response", "timestamp": ""}
+}
+
+batch_update_responses("outreach_tracking.csv", responses)
