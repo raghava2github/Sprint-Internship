@@ -1,0 +1,22 @@
+import requests
+
+# Step 1: Set up GitHub API Token
+
+GITHUB_TOKEN = "your_github_token"
+HEADERS = {
+    "Authorization": f"token {GITHUB_TOKEN}"
+}
+
+# Step 2: Fetch User Profiles (Filter based on criteria)
+
+def fetch_github_profiles():
+    url = "https://api.github.com/users?since=0&per_page=10"  # Fetch first 10 profiles
+    response = requests.get(url, headers=HEADERS)
+    if response.status_code == 200:
+        return response.json()  # Returns JSON with user data
+    else:
+        print("Error fetching profiles:", response.status_code, response.text)
+        return None
+
+github_profiles = fetch_github_profiles()
+print(github_profiles)
