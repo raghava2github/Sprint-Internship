@@ -1,0 +1,91 @@
+from fastapi import FastAPI, HTTPException
+import sendgrid
+from sendgrid.helpers.mail import Mail
+from pydantic import BaseModel
+from typing import List
+from datetime import datetime
+import csv
+
+# Initialize FastAPI App
+app = FastAPI()
+
+# SendGrid API Key
+SENDGRID_API_KEY = "your_sendgrid_api_key"
+sg = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
+
+# Tracking File Name
+TRACKING_FILE = "outreach_tracking.csv"
+
+# Initialize Tracking File
+def initialize_tracking_file():
+    with open(TRACKING_FILE, mode="w", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow(["Name", "Email", "Message Sent", "Response Status", "Response Timestamp"])
+
+# Call this once to initialize the file
+initialize_tracking_file()
+
+# Function to log outreach attempts
+def log_outreach_attempt(name, email, status="No Response"):
+    with open(TRACKING_FILE, mode="a", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow([name, email, "Yes", status, ""])
+
+# Function to send emails using SendGrid
+def send_email(to_email, subject, content):
+    message = Mail(
+        from_email="your_email@example.com",
+        to_emails=to_email,
+        subject=subject,
+        plain_text_content=content
+    )
+    response = sg.send(message)
+    return response.status_code == 202
+
+# Pydantic Model for API Input
+class OutreachRequest(BaseModel):
+    name: str
+    email: str
+    message: str
+
+class BulkOutreachRequest(BaseModel):
+    recipients: List[OutreachRequest]
+
+# API Endpoint: Send Single Email
+@app.post("/send-email/")
+async def send_single_email(request: OutreachRequest):
+    try:
+        success = send_email(request.email, "Personalized Outreach", request.message)
+        if success:
+            log_outreach_attempt(request.name, request.email, "Sent")
+            return {"status": "Success", "message": f"Email sent to {request.name}"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to send email")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# API Endpoint: Bulk Email Outreach
+@app.post("/send-bulk-emails/")
+async def send_bulk_emails(request: BulkOutreachRequest):
+    results = []
+    for recipient in request.recipients:
+        try:
+            success = send_email(recipient.email, "Personalized Outreach", recipient.message)
+            if success:
+                log_outreach_attempt(recipient.name, recipient.email, "Sent")
+                results.append({"name": recipient.name, "status": "Success"})
+            else:
+                results.append({"name": recipient.name, "status": "Failed"})
+        except Exception as e:
+            results.append({"name": recipient.name, "status": f"Error: {str(e)}"})
+    return {"status": "Bulk Outreach Complete", "results": results}
+
+# API Endpoint: Get Outreach Log
+@app.get("/outreach-log/")
+async def get_outreach_log():
+    try:
+        with open(TRACKING_FILE, mode="r") as file:
+            data = [row for row in csv.reader(file)]
+            return {"status": "Success", "log": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
