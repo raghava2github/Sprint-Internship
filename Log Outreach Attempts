@@ -1,0 +1,24 @@
+from datetime import datetime
+
+# Function to log outreach attempts
+def log_outreach_attempt(filename, profile, status="No Response"):
+    with open(filename, mode="a", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow([
+            profile["name"],
+            profile["title"],
+            profile["company"],
+            "Yes",  # Message Sent
+            status,
+            ""  # Response Timestamp left blank for no response
+        ])
+
+# Example profile
+profile = {
+    "name": "Jane Doe",
+    "title": "Software Engineer",
+    "company": "TechCorp"
+}
+
+# Log the outreach attempt
+log_outreach_attempt("outreach_tracking.csv", profile)
