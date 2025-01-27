@@ -1,0 +1,14 @@
+import pandas as pd
+
+# Function to update response status
+def update_response_status(filename, name, status):
+    # Load the tracking CSV into a DataFrame
+    df = pd.read_csv(filename)
+    # Update the response status and timestamp
+    df.loc[df["Name"] == name, "Response Status"] = status
+    df.loc[df["Name"] == name, "Response Timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Save the updated DataFrame back to the CSV
+    df.to_csv(filename, index=False)
+
+# Example: Update Jane Doe's response status to "Accepted"
+update_response_status("outreach_tracking.csv", "Jane Doe", "Accepted")
