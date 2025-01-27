@@ -1,0 +1,11 @@
+import csv
+
+# Initialize the tracking file
+def initialize_tracking_file(filename):
+    with open(filename, mode="w", newline="") as file:
+        writer = csv.writer(file)
+        # Write the header row
+        writer.writerow(["Name", "Job Title", "Company", "Message Sent", "Response Status", "Response Timestamp"])
+
+# Example: Initialize the tracking CSV
+initialize_tracking_file("outreach_tracking.csv")
