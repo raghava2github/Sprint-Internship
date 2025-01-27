@@ -1,0 +1,13 @@
+import csv
+
+def save_to_csv(data, filename):
+    with open(filename, mode="w", newline="") as file:
+        writer = csv.writer(file)
+        # Write header row (adjust fields as per your API response)
+        writer.writerow(["Name", "Job Title", "Company", "Followers"])
+        for item in data:
+            writer.writerow([item.get("name"), item.get("title"), item.get("company"), item.get("followers")])
+
+# Example: Save LinkedIn or GitHub profiles to CSV
+save_to_csv(profiles, "linkedin_profiles.csv")
+save_to_csv(github_profiles, "github_profiles.csv")
